@@ -1,4 +1,6 @@
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This is the provided NumberTriangle class to be used in this coding task.
@@ -30,7 +32,6 @@ import java.io.*;
 public class NumberTriangle {
 
     private int root;
-
     private NumberTriangle left;
     private NumberTriangle right;
 
@@ -42,7 +43,6 @@ public class NumberTriangle {
         this.left = left;
     }
 
-
     public void setRight(NumberTriangle right) {
         this.right = right;
     }
@@ -51,84 +51,71 @@ public class NumberTriangle {
         return root;
     }
 
-
-    /**
-     * [not for credit]
-     * Set the root of this NumberTriangle to be the max path sum
-     * of this NumberTriangle, as defined in Project Euler problem 18.
-     * After this method is called, this NumberTriangle should be a leaf.
-     *
-     * Hint: think recursively and use the idea of partial tracing from first year :)
-     *
-     * Note: a NumberTriangle contains at least one value.
-     */
-    public void maxSumPath() {
-        // for fun [not for credit]:
-    }
-
-
     public boolean isLeaf() {
-        return right == null && left == null;
+        return left == null && right == null;
     }
 
-
-    /**
-     * Follow path through this NumberTriangle structure ('l' = left; 'r' = right) and
-     * return the root value at the end of the path. An empty string will return
-     * the root of the NumberTriangle.
-     *
-     * You can decide if you want to use a recursive or an iterative approach in your solution.
-     *
-     * You can assume that:
-     *      the length of path is less than the height of this NumberTriangle structure.
-     *      each character in the string is either 'l' or 'r'
-     *
-     * @param path the path to follow through this NumberTriangle
-     * @return the root value at the location indicated by path
-     *
-     */
     public int retrieve(String path) {
-        // TODO implement this method
-        return -1;
+        if (path.isEmpty()) return root;
+
+        char dir = path.charAt(0);
+        String rest = path.substring(1);
+
+        if (dir == 'l' && left != null) {
+            return left.retrieve(rest);
+        } else if (dir == 'r' && right != null) {
+            return right.retrieve(rest);
+        }
+
+        throw new IllegalArgumentException("Invalid path: " + path);
     }
 
-    /** Read in the NumberTriangle structure from a file.
-     *
-     * You may assume that it is a valid format with a height of at least 1,
-     * so there is at least one line with a number on it to start the file.
-     *
-     * See resources/input_tree.txt for an example NumberTriangle format.
-     *
-     * @param fname the file to load the NumberTriangle structure from
-     * @return the topmost NumberTriangle object in the NumberTriangle structure read from the specified file
-     * @throws IOException may naturally occur if an issue reading the file occurs
-     */
+    public void maxSumPath() {
+        if (isLeaf()) return;
+
+        if (left != null) left.maxSumPath();
+        if (right != null) right.maxSumPath();
+
+        int leftVal = left != null ? left.root : 0;
+        int rightVal = right != null ? right.root : 0;
+
+        root += Math.max(leftVal, rightVal);
+
+        left = null;
+        right = null;
+    }
+
     public static NumberTriangle loadTriangle(String fname) throws IOException {
-        // open the file and get a BufferedReader object whose methods
-        // are more convenient to work with when reading the file contents.
         InputStream inputStream = NumberTriangle.class.getClassLoader().getResourceAsStream(fname);
+        if (inputStream == null) {
+            throw new FileNotFoundException("File not found: " + fname);
+        }
+
         BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+        List<List<NumberTriangle>> rows = new ArrayList<>();
 
-
-        // TODO define any variables that you want to use to store things
-
-        // will need to return the top of the NumberTriangle,
-        // so might want a variable for that.
-        NumberTriangle top = null;
-
-        String line = br.readLine();
-        while (line != null) {
-
-            // remove when done; this line is included so running starter code prints the contents of the file
-            System.out.println(line);
-
-            // TODO process the line
-
-            //read the next line
-            line = br.readLine();
+        String line;
+        while ((line = br.readLine()) != null) {
+            String[] parts = line.trim().split("\\s+");
+            List<NumberTriangle> currentRow = new ArrayList<>();
+            for (String num : parts) {
+                currentRow.add(new NumberTriangle(Integer.parseInt(num)));
+            }
+            rows.add(currentRow);
         }
         br.close();
-        return top;
+
+        for (int r = 0; r < rows.size() - 1; r++) {
+            List<NumberTriangle> current = rows.get(r);
+            List<NumberTriangle> next = rows.get(r + 1);
+            for (int c = 0; c < current.size(); c++) {
+                NumberTriangle node = current.get(c);
+                node.setLeft(next.get(c));
+                node.setRight(next.get(c + 1));
+            }
+        }
+
+        return rows.get(0).get(0);
     }
 
     public static void main(String[] args) throws IOException {
