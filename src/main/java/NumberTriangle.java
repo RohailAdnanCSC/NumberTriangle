@@ -119,13 +119,11 @@ public class NumberTriangle {
     }
 
     public static void main(String[] args) throws IOException {
-
         NumberTriangle mt = NumberTriangle.loadTriangle("input_tree.txt");
 
-        // [not for credit]
-        // you can implement NumberTriangle's maxPathSum method if you want to try to solve
-        // Problem 18 from project Euler [not for credit]
+        System.out.println("Root before maxSumPath(): " + mt.getRoot());
+
         mt.maxSumPath();
-        System.out.println(mt.getRoot());
+        System.out.println("Root after maxSumPath(): " + mt.getRoot());
     }
 }
