@@ -1,4 +1,6 @@
 import java.io.*;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * This is the provided NumberTriangle class to be used in this coding task.
